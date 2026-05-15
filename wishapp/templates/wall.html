@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ Friends Birthday Wall ✨</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+        
+        h1 {
+            text-align: center;
+            color: white;
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 40px;
+            font-size: 1.2rem;
+        }
+        
+        .wall-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+        
+        .wish-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+            animation: fadeInUp 0.5s ease-out;
+        }
+        
+        .wish-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .friend-name {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .wish-message {
+            color: #555;
+            line-height: 1.6;
+            margin: 15px 0;
+        }
+        
+        .wish-date {
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 15px;
+            text-align: right;
+        }
+        
+        .add-form {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .add-form h2 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .add-form input, .add-form textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+        }
+        
+        .add-form textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .add-form button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        .add-form button:hover {
+            opacity: 0.9;
+        }
+        
+        .nav-buttons {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .nav-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            margin: 0 10px;
+            display: inline-block;
+        }
+        
+        .empty-state {
+            text-align: center;
+            color: white;
+            padding: 60px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+        }
+        
+        .stats {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-buttons">
+            <a href="/" class="nav-btn">🏠 Home</a>
+            <a href="/wall/" class="nav-btn">🎂 Friends Wall</a>
+        </div>
+        
+        <h1>✨ Friends Birthday Wall ✨</h1>
+        <div class="subtitle">A collection of beautiful wishes for amazing people</div>
+        
+        <div class="stats">
+            🎉 {{ friends|length }} wishes have been shared with love 💕
+        </div>
+        
+        <div class="wall-grid">
+            {% for friend in friends %}
+            <div class="wish-card">
+                <div class="friend-name">🎂 {{ friend.name }}</div>
+                <div class="wish-message">{{ friend.message }}</div>
+                <div class="wish-date">Added on {{ friend.added_date|date:"F j, Y" }}</div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <h2>No wishes yet! 🎈</h2>
+                <p>Be the first to add a birthday wish for your friend!</p>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="add-form">
+            <h2>🎁 Add a Birthday Wish for a Friend</h2>
+            <form method="POST" action="/add-friend/">
+                {% csrf_token %}
+                <input type="text" name="name" placeholder="Friend's Name" required>
+                <textarea name="message" placeholder="Write your birthday wish here... 🌟" required></textarea>
+                <button type="submit">💝 Share This Wish</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

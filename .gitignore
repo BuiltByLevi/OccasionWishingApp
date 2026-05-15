@@ -1,0 +1,15 @@
+venv/
+__pycache__/
+*.pyc
+db.sqlite3
+.DS_Store
+*.log
+.env
+staticfiles/
+*/__pycache__/
+*/*/__pycache__/
+core/__pycache__/
+wishapp/__pycache__/
+core/migrations/
+wishapp/migrations/
+*.sqlite3
