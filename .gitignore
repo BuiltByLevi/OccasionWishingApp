@@ -10,6 +10,4 @@ staticfiles/
 */*/__pycache__/
 core/__pycache__/
 wishapp/__pycache__/
-core/migrations/
-wishapp/migrations/
 *.sqlite3
