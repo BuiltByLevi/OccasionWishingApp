@@ -1,10 +1,10 @@
-from django.shortcuts import render, redirect
-from .models import OccasionMessage, FriendWish
+from django.shortcuts import render
+from .models import OccasionMessage
 
 def home(request):
     # Get parameters from URL
     occasion = request.GET.get('occasion', 'birthday')
-    name = request.GET.get('to', 'Friend')
+    name = request.GET.get('to', 'Sec-C')  # Changed default to Sec-C
     
     # Check for custom message in URL
     custom_title = request.GET.get('title', None)
@@ -18,7 +18,7 @@ def home(request):
             'name': name,
             'occasion': occasion,
             'title': custom_title,
-            'message': custom_message,
+            'message': custom_message.replace('\\n', '\n'),
             'theme_color': custom_color if custom_color else '#ff4d6d',
             'emojis': custom_emojis if custom_emojis else '✨🎉✨',
         }
@@ -35,10 +35,10 @@ def home(request):
                 'emojis': msg.emojis,
             }
         else:
-            # Default messages if no database entry is available
+            # Default messages
             defaults = {
                 'birthday': {
-                    'title': '🎉 Happy Birthday',
+                    'title': '🎉 Happy Birthday Sec-C!',
                     'message': (
                         "You are truly one of the most special people in my life. Your friendship is a treasure that I'll always be grateful for. "
                         "No matter how much time passes, the memories we created together still bring a smile to my face. I really miss those beautiful days, "
@@ -72,18 +72,4 @@ def home(request):
                 'emojis': default['emojis'],
             }
     
-    return render(request, 'home.html', context)
-
-def friends_wall(request):
-    """Display all friends' wishes in a gallery wall"""
-    all_friends = FriendWish.objects.all().order_by('-added_date')
-    return render(request, 'wall.html', {'friends': all_friends})
-
-def add_friend(request):
-    """Add a new friend wish to the wall"""
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        message = request.POST.get('message')
-        if name and message:
-            FriendWish.objects.create(name=name, message=message)
-    return redirect('friends_wall')
+        return render(request, 'home.html', context)

@@ -68,23 +68,6 @@
             font-family: 'Poppins', sans-serif;
         }
         
-        .whatsapp-share {
-            position: fixed;
-            bottom: 25px;
-            left: 25px;
-            z-index: 30;
-            background: #25D366;
-            padding: 12px 25px;
-            border-radius: 50px;
-            color: white;
-            text-decoration: none;
-            font-weight: bold;
-            display: flex;
-            gap: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            font-family: 'Poppins', sans-serif;
-        }
-        
         .customize-btn {
             position: fixed;
             top: 20px;
@@ -98,55 +81,7 @@
             cursor: pointer;
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             font-family: 'Poppins', sans-serif;
-        }
-        
-        .chatbot {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            z-index: 30;
-            width: 320px;
-            background: rgba(0,0,0,0.9);
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-        }
-        
-        .chatbot-header {
-            padding: 12px 15px;
-            border-radius: 20px 20px 0 0;
-            color: white;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        .chatbot-messages {
-            height: 250px;
-            overflow-y: auto;
-            padding: 10px;
-            color: white;
-        }
-        
-        .chatbot-input-area {
-            display: flex;
-            padding: 10px;
-            gap: 8px;
-        }
-        
-        .chatbot-input {
-            flex: 1;
-            padding: 8px;
-            border-radius: 20px;
-            border: none;
-            outline: none;
-        }
-        
-        .chatbot-send-btn {
-            color: white;
-            border: none;
-            border-radius: 20px;
-            padding: 8px 15px;
-            cursor: pointer;
+            background: {{ theme_color|default:'#ff4d6d' }};
         }
         
         /* Custom Form Styles */
@@ -232,7 +167,7 @@
 <body>
 
 <!-- Customize Button -->
-<button class="customize-btn" id="customizeBtn" style="background: {{ theme_color|default:'#ff4d6d' }};">
+<button class="customize-btn" id="customizeBtn">
     ✏️ Customize Message
 </button>
 
@@ -242,11 +177,6 @@
     <option value="anniversary" {% if occasion == 'anniversary' %}selected{% endif %}>💕 Anniversary</option>
     <option value="valentine" {% if occasion == 'valentine' %}selected{% endif %}>🌹 Valentine</option>
 </select>
-
-<!-- WhatsApp Share -->
-<a href="#" id="shareBtn" class="whatsapp-share">
-    📱 Share on WhatsApp
-</a>
 
 <!-- Main Card -->
 <div id="main-card">
@@ -286,19 +216,6 @@
         
         <button class="apply-btn" id="applyCustom">🎉 Apply & Share Link</button>
         <button class="close-form-btn" id="closeFormBtn">Close</button>
-    </div>
-</div>
-
-<!-- Chatbot -->
-<div class="chatbot">
-    <div class="chatbot-header" style="background: {{ theme_color|default:'#ff4d6d' }};">
-        <span>🤖 WishBot</span>
-        <span id="closeChat" style="cursor: pointer;">✕</span>
-    </div>
-    <div id="chatMessages" class="chatbot-messages"></div>
-    <div class="chatbot-input-area">
-        <input type="text" id="chatInput" class="chatbot-input" placeholder="Say something...">
-        <button id="sendBtn" class="chatbot-send-btn" style="background: {{ theme_color|default:'#ff4d6d' }};">Send</button>
     </div>
 </div>
 
@@ -375,80 +292,14 @@
 </script>
 
 <script>
-    // Chatbot Logic
+    // Custom Message Form Logic
     document.addEventListener('DOMContentLoaded', function() {
-        const chatMessages = document.getElementById('chatMessages');
-        const chatInput = document.getElementById('chatInput');
-        const sendBtn = document.getElementById('sendBtn');
-        const closeChat = document.getElementById('closeChat');
-        const occasionSelect = document.getElementById('occasionSelect');
-        const shareBtn = document.getElementById('shareBtn');
         const customizeBtn = document.getElementById('customizeBtn');
         const customFormOverlay = document.getElementById('customFormOverlay');
         const closeFormBtn = document.getElementById('closeFormBtn');
         const applyCustom = document.getElementById('applyCustom');
+        const occasionSelect = document.getElementById('occasionSelect');
 
-        function addMessage(sender, msg, isUser) {
-            const div = document.createElement('div');
-            div.style.marginBottom = '12px';
-            div.style.textAlign = isUser ? 'right' : 'left';
-            div.style.color = 'white';
-            const themeColor = '{{ theme_color|default:"#ff4d6d" }}';
-            div.innerHTML = '<strong style="color: ' + themeColor + ';">' + sender + ':</strong> <span style="background: ' + (isUser ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.5)') + '; padding: 5px 10px; border-radius: 15px; display: inline-block;">' + msg + '</span>';
-            chatMessages.appendChild(div);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-    
-        function botReply(msg) {
-            const lower = msg.toLowerCase();
-            if(lower.includes('birthday')) return '🎂 Happy Birthday! Make a wish! 🕯️';
-            if(lower.includes('anniversary')) return '💕 Congratulations! Wishing you endless love!';
-            if(lower.includes('valentine')) return '🌹 Love is beautiful! Enjoy your day! 💖';
-            if(lower.includes('thank')) return '😊 You\'re welcome! Spread the joy! 🎉';
-            if(lower.includes('love')) return '💗 Love is everything! Have a fantastic day! ✨';
-            return '🎈 That\'s awesome! Enjoy your special moment! 🌟';
-        }
-    
-        function sendMessage() {
-            const msg = chatInput.value.trim();
-            if(!msg) return;
-            addMessage('You', msg, true);
-            chatInput.value = '';
-            setTimeout(function() {
-                const reply = botReply(msg);
-                addMessage('WishBot', reply, false);
-            }, 500);
-        }
-    
-        sendBtn.addEventListener('click', sendMessage);
-        chatInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') sendMessage();
-        });
-
-        addMessage('WishBot', 'Hello! 👋 How can I make your day special?', false);
-
-        if(closeChat) {
-            closeChat.addEventListener('click', function() {
-                document.querySelector('.chatbot').style.display = 'none';
-            });
-        }
-
-        if(occasionSelect) {
-            occasionSelect.addEventListener('change', function() {
-                const url = new URL(window.location.href);
-                url.searchParams.set('occasion', this.value);
-                window.location.href = url;
-            });
-        }
-
-        if(shareBtn) {
-            shareBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                const text = '✨ Special Wish For You! ✨\n\n{{ title }} {{ name }}!\n{{ message }}\n\nView here: ' + window.location.href;
-                window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
-            });
-        }
-        
         if(customizeBtn) {
             customizeBtn.addEventListener('click', function() {
                 customFormOverlay.style.display = 'flex';
@@ -475,7 +326,7 @@
                 if(message) url += 'message=' + encodeURIComponent(message) + '&';
                 if(color) url += 'color=' + color + '&';
                 if(emojis) url += 'emojis=' + encodeURIComponent(emojis) + '&';
-                url += 'occasion=' + document.getElementById('occasionSelect').value;
+                if(occasionSelect) url += 'occasion=' + occasionSelect.value;
                 
                 window.location.href = url;
             });
@@ -486,6 +337,14 @@
                 if (e.target === customFormOverlay) {
                     customFormOverlay.style.display = 'none';
                 }
+            });
+        }
+
+        if(occasionSelect) {
+            occasionSelect.addEventListener('change', function() {
+                const url = new URL(window.location.href);
+                url.searchParams.set('occasion', this.value);
+                window.location.href = url;
             });
         }
     });
