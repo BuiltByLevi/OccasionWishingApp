@@ -1,5 +1,4 @@
 from django.shortcuts import render
-from django.http import HttpResponse
 from .models import OccasionMessage
 
 def home(request):
@@ -7,14 +6,15 @@ def home(request):
     occasion = request.GET.get('occasion', 'birthday')
     name = request.GET.get('to', 'Sec-C')
     
-    # Check for custom message in URL
-    custom_title = request.GET.get('title', None)
-    custom_message = request.GET.get('message', None)
-    custom_color = request.GET.get('color', None)
-    custom_emojis = request.GET.get('emojis', None)
+    # Get custom parameters
+    custom_title = request.GET.get('title', '')
+    custom_message = request.GET.get('message', '')
+    custom_color = request.GET.get('color', '')
+    custom_emojis = request.GET.get('emojis', '')
     
-    # If custom parameters exist, use them
-    if custom_title is not None and custom_message is not None:
+    # Check if custom parameters exist
+    if custom_title and custom_message:
+        # Use custom values
         context = {
             'name': name,
             'occasion': occasion,
@@ -25,7 +25,7 @@ def home(request):
         }
         return render(request, 'home.html', context)
     
-    # Try to get from database
+    # Try database
     msg = OccasionMessage.objects.filter(occasion=occasion).first()
     if msg:
         context = {
@@ -33,46 +33,54 @@ def home(request):
             'occasion': occasion,
             'title': msg.title,
             'message': msg.message,
-            'theme_color': msg.theme_color or '#ff4d6d',
+            'theme_color': msg.theme_color,
             'emojis': msg.emojis,
         }
         return render(request, 'home.html', context)
     
-    # Default messages if no database entry is available
-    defaults = {
-        'birthday': {
+    # Default birthday message
+    if occasion == 'birthday':
+        context = {
+            'name': name,
+            'occasion': occasion,
             'title': '🎉 Happy Birthday',
-            'message': (
-                "You are truly one of the most special people in my life. Your friendship is a treasure that I'll always be grateful for. "
-                "No matter how much time passes, the memories we created together still bring a smile to my face. I really miss those beautiful days, "
-                "the laughter, the fun, and all the moments we shared.\n\n"
-                "May your life always be filled with happiness, success, love, and endless smiles. Stay the amazing, kind-hearted, "
-                "and beautiful person you are. Wishing you a birthday as wonderful as you are 💖✨ 🌟"
-            ),
-            'color': '#ff4d6d',
-            'emojis': '🎂🎈🎉🎁'
-        },
-        'anniversary': {
+            'message': "You are truly one of the most special people in my life. Your friendship is a treasure that I'll always be grateful for. No matter how much time passes, the memories we created together still bring a smile to my face. I really miss those beautiful days, the laughter, the fun, and all the moments we shared.\n\nMay your life always be filled with happiness, success, love, and endless smiles. Stay the amazing, kind-hearted, and beautiful person you are. Wishing you a birthday as wonderful as you are 💖✨ 🌟",
+            'theme_color': '#ff4d6d',
+            'emojis': '🎂🎈🎉🎁',
+        }
+        return render(request, 'home.html', context)
+    
+    # Default anniversary message
+    if occasion == 'anniversary':
+        context = {
+            'name': name,
+            'occasion': occasion,
             'title': '💕 Happy Anniversary',
             'message': 'Celebrating your beautiful journey together! 💑',
-            'color': '#ffb703',
-            'emojis': '💕🥂💍💐'
-        },
-        'valentine': {
+            'theme_color': '#ffb703',
+            'emojis': '💕🥂💍💐',
+        }
+        return render(request, 'home.html', context)
+    
+    # Default valentine message
+    if occasion == 'valentine':
+        context = {
+            'name': name,
+            'occasion': occasion,
             'title': '🌹 Happy Valentines Day',
             'message': 'You deserve all the love in the world! 💖',
-            'color': '#ff69b4',
-            'emojis': '💖🌹💘💕'
+            'theme_color': '#ff69b4',
+            'emojis': '💖🌹💘💕',
         }
-    }
+        return render(request, 'home.html', context)
     
-    default = defaults.get(occasion, defaults['birthday'])
+    # Fallback (should never reach here)
     context = {
         'name': name,
         'occasion': occasion,
-        'title': default['title'],
-        'message': default['message'],
-        'theme_color': default['color'],
-        'emojis': default['emojis'],
+        'title': '✨ Special Wish',
+        'message': 'Wishing you a wonderful day!',
+        'theme_color': '#ff4d6d',
+        'emojis': '✨🎉✨',
     }
     return render(request, 'home.html', context)
