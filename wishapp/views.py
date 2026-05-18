@@ -14,7 +14,6 @@ def home(request):
     
     # Check if custom parameters exist
     if custom_title and custom_message:
-        # Use custom values
         context = {
             'name': name,
             'occasion': occasion,
@@ -25,7 +24,7 @@ def home(request):
         }
         return render(request, 'home.html', context)
     
-    # Try database
+    # Check database first
     msg = OccasionMessage.objects.filter(occasion=occasion).first()
     if msg:
         context = {
@@ -38,7 +37,7 @@ def home(request):
         }
         return render(request, 'home.html', context)
     
-    # Default birthday message
+    # Birthday message
     if occasion == 'birthday':
         context = {
             'name': name,
@@ -48,39 +47,35 @@ def home(request):
             'theme_color': '#ff4d6d',
             'emojis': '🎂🎈🎉🎁',
         }
-        return render(request, 'home.html', context)
-    
-    # Default anniversary message
-    if occasion == 'anniversary':
+    # Anniversary message
+    elif occasion == 'anniversary':
         context = {
             'name': name,
             'occasion': occasion,
             'title': '💕 Happy Anniversary',
-            'message': 'Celebrating your beautiful journey together! 💑',
+            'message': 'Congratulations on your anniversary! May your love continue to grow stronger with each passing year. Wishing you both a day filled with beautiful memories and many more years of happiness together! 💑',
             'theme_color': '#ffb703',
             'emojis': '💕🥂💍💐',
         }
-        return render(request, 'home.html', context)
-    
-    # Default valentine message
-    if occasion == 'valentine':
+    # Valentine message
+    elif occasion == 'valentine':
         context = {
             'name': name,
             'occasion': occasion,
             'title': '🌹 Happy Valentines Day',
-            'message': 'You deserve all the love in the world! 💖',
+            'message': 'Happy Valentines Day! You deserve all the love, joy, and happiness in the world. May your day be filled with romance, sweet moments, and lots of chocolate! 💖',
             'theme_color': '#ff69b4',
             'emojis': '💖🌹💘💕',
         }
-        return render(request, 'home.html', context)
+    # Default fallback
+    else:
+        context = {
+            'name': name,
+            'occasion': occasion,
+            'title': '✨ Special Occasion',
+            'message': f'Wishing you a wonderful {occasion} celebration! 🎉',
+            'theme_color': '#ff4d6d',
+            'emojis': '✨🎉✨',
+        }
     
-    # Fallback (should never reach here)
-    context = {
-        'name': name,
-        'occasion': occasion,
-        'title': '✨ Special Wish',
-        'message': 'Wishing you a wonderful day!',
-        'theme_color': '#ff4d6d',
-        'emojis': '✨🎉✨',
-    }
     return render(request, 'home.html', context)
