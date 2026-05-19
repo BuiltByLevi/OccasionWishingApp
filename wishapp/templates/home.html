@@ -144,18 +144,6 @@
             margin-bottom: 10px;
         }
         
-        .upload-btn-inline {
-            background: #4CAF50;
-            color: white;
-            padding: 12px;
-            border: none;
-            border-radius: 10px;
-            width: 100%;
-            font-weight: bold;
-            cursor: pointer;
-            margin-bottom: 10px;
-        }
-        
         .close-form-btn {
             background: #ff4757;
             color: white;
@@ -366,12 +354,11 @@
         if(closeFormBtn) {
             closeFormBtn.addEventListener('click', function() {
                 customFormOverlay.style.display = 'none';
-                // Reset preview when closing
                 if(imagePreview) imagePreview.style.display = 'none';
             });
         }
         
-        // Image preview logic
+        // Image preview and upload logic
         if(imageInput) {
             imageInput.addEventListener('change', function(e) {
                 const file = e.target.files[0];
@@ -383,10 +370,8 @@
                     };
                     reader.readAsDataURL(file);
                     
-                    // Update occasion and auto-upload
                     if(uploadOccasion) uploadOccasion.value = occasionSelect ? occasionSelect.value : 'birthday';
                     
-                    // Auto-submit the form
                     const formData = new FormData(uploadForm);
                     fetch('/upload-image/', {
                         method: 'POST',
@@ -395,13 +380,13 @@
                             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
                         }
                     }).then(() => {
-                        // Reload page to show image
                         setTimeout(() => location.reload(), 500);
                     });
                 }
             });
         }
         
+        // Apply button - create custom URL
         if(applyCustom) {
             applyCustom.addEventListener('click', function() {
                 const name = document.getElementById('customName').value;
@@ -409,6 +394,7 @@
                 const message = document.getElementById('customMessage').value;
                 const color = document.getElementById('customColor').value.substring(1);
                 const emojis = document.getElementById('customEmojis').value;
+                const currentOccasion = occasionSelect ? occasionSelect.value : 'birthday';
                 
                 let url = window.location.pathname + '?';
                 if(name) url += 'to=' + encodeURIComponent(name) + '&';
@@ -416,7 +402,7 @@
                 if(message) url += 'message=' + encodeURIComponent(message) + '&';
                 if(color) url += 'color=' + color + '&';
                 if(emojis) url += 'emojis=' + encodeURIComponent(emojis) + '&';
-                if(occasionSelect) url += 'occasion=' + occasionSelect.value;
+                if(currentOccasion) url += 'occasion=' + currentOccasion;
                 
                 window.location.href = url;
             });
@@ -430,11 +416,16 @@
             });
         }
 
-        // Occasion selector logic
+        // Occasion selector logic - clear custom params to see stored image
         if(occasionSelect) {
             occasionSelect.addEventListener('change', function() {
                 const url = new URL(window.location.href);
                 url.searchParams.set('occasion', this.value);
+                // Remove custom parameters to show the stored image
+                url.searchParams.delete('title');
+                url.searchParams.delete('message');
+                url.searchParams.delete('color');
+                url.searchParams.delete('emojis');
                 window.location.href = url;
             });
         }

@@ -13,6 +13,10 @@ def home(request):
     custom_color = request.GET.get('color', '')
     custom_emojis = request.GET.get('emojis', '')
     
+    # Get stored image for this occasion from database (if exists)
+    stored_msg = OccasionMessage.objects.filter(occasion=occasion).first()
+    stored_image = stored_msg.custom_image.url if stored_msg and stored_msg.custom_image else None
+    
     # Check if custom parameters exist
     if custom_title and custom_message:
         context = {
@@ -22,21 +26,20 @@ def home(request):
             'message': custom_message,
             'theme_color': custom_color if custom_color else '#ff4d6d',
             'emojis': custom_emojis if custom_emojis else '✨🎉✨',
-            'custom_image': None,
+            'custom_image': stored_image,  # Always show stored image
         }
         return render(request, 'home.html', context)
     
-    # Try database first
-    msg = OccasionMessage.objects.filter(occasion=occasion).first()
-    if msg:
+    # Try database first for full occasion data
+    if stored_msg:
         context = {
             'name': name,
             'occasion': occasion,
-            'title': msg.title,
-            'message': msg.message,
-            'theme_color': msg.theme_color,
-            'emojis': msg.emojis,
-            'custom_image': msg.custom_image.url if msg.custom_image else None,
+            'title': stored_msg.title,
+            'message': stored_msg.message,
+            'theme_color': stored_msg.theme_color,
+            'emojis': stored_msg.emojis,
+            'custom_image': stored_image,
         }
         return render(request, 'home.html', context)
     
