@@ -84,22 +84,6 @@
             background: {{ theme_color|default:'#ff4d6d' }};
         }
         
-        .upload-btn {
-            position: fixed;
-            top: 80px;
-            left: 20px;
-            z-index: 30;
-            padding: 10px 20px;
-            border-radius: 50px;
-            color: white;
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            font-family: 'Poppins', sans-serif;
-            background: #4CAF50;
-        }
-        
         /* Custom Form Styles */
         .custom-form-overlay {
             position: fixed;
@@ -160,6 +144,18 @@
             margin-bottom: 10px;
         }
         
+        .upload-btn-inline {
+            background: #4CAF50;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            width: 100%;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        
         .close-form-btn {
             background: #ff4757;
             color: white;
@@ -188,6 +184,14 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             object-fit: cover;
         }
+        
+        .image-preview {
+            max-width: 100%;
+            max-height: 150px;
+            margin: 10px 0;
+            border-radius: 10px;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -195,11 +199,6 @@
 <!-- Customize Button -->
 <button class="customize-btn" id="customizeBtn">
     ✏️ Customize Message
-</button>
-
-<!-- Upload Image Button -->
-<button class="upload-btn" id="uploadImageBtn">
-    📸 Upload Image
 </button>
 
 <!-- Occasion Selector -->
@@ -237,10 +236,18 @@
     </div>
 </div>
 
-<!-- Custom Message Form -->
+<!-- Custom Message Form with Image Upload INSIDE -->
 <div id="customFormOverlay" class="custom-form-overlay">
     <div class="custom-form-container">
         <h3>✨ Create Your Custom Wish ✨</h3>
+        
+        <form method="POST" action="/upload-image/" enctype="multipart/form-data" id="uploadForm">
+            {% csrf_token %}
+            <label>🎨 Upload Custom Image (Optional):</label>
+            <input type="file" name="custom_image" accept="image/*" id="imageInput">
+            <div class="image-preview" id="imagePreview"></div>
+            <input type="hidden" name="occasion" id="uploadOccasion" value="{{ occasion }}">
+        </form>
         
         <label>Friend's Name:</label>
         <input type="text" id="customName" placeholder="Enter friend's name" value="{{ name }}">
@@ -259,28 +266,6 @@
         
         <button class="apply-btn" id="applyCustom">🎉 Apply & Share Link</button>
         <button class="close-form-btn" id="closeFormBtn">Close</button>
-    </div>
-</div>
-
-<!-- Image Upload Form -->
-<div id="uploadFormOverlay" class="custom-form-overlay">
-    <div class="custom-form-container">
-        <h3>📸 Upload Custom Image</h3>
-        <form method="POST" action="/upload-image/" enctype="multipart/form-data">
-            {% csrf_token %}
-            <label>Select Occasion:</label>
-            <select name="occasion" required>
-                <option value="birthday">🎂 Birthday</option>
-                <option value="anniversary">💕 Anniversary</option>
-                <option value="valentine">🌹 Valentine</option>
-            </select>
-            
-            <label>Choose Image:</label>
-            <input type="file" name="custom_image" accept="image/*" required>
-            
-            <button type="submit" class="apply-btn">📤 Upload</button>
-            <button type="button" class="close-form-btn" id="closeUploadForm">Cancel</button>
-        </form>
     </div>
 </div>
 
@@ -365,10 +350,11 @@
         const applyCustom = document.getElementById('applyCustom');
         const occasionSelect = document.getElementById('occasionSelect');
         
-        // Image Upload Elements
-        const uploadImageBtn = document.getElementById('uploadImageBtn');
-        const uploadFormOverlay = document.getElementById('uploadFormOverlay');
-        const closeUploadForm = document.getElementById('closeUploadForm');
+        // Image upload elements
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const uploadOccasion = document.getElementById('uploadOccasion');
+        const uploadForm = document.getElementById('uploadForm');
 
         // Customize button logic
         if(customizeBtn) {
@@ -380,6 +366,39 @@
         if(closeFormBtn) {
             closeFormBtn.addEventListener('click', function() {
                 customFormOverlay.style.display = 'none';
+                // Reset preview when closing
+                if(imagePreview) imagePreview.style.display = 'none';
+            });
+        }
+        
+        // Image preview logic
+        if(imageInput) {
+            imageInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if(file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        imagePreview.innerHTML = '<img src="' + event.target.result + '" style="max-width: 100%; max-height: 150px; border-radius: 10px;">';
+                        imagePreview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                    
+                    // Update occasion and auto-upload
+                    if(uploadOccasion) uploadOccasion.value = occasionSelect ? occasionSelect.value : 'birthday';
+                    
+                    // Auto-submit the form
+                    const formData = new FormData(uploadForm);
+                    fetch('/upload-image/', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                        }
+                    }).then(() => {
+                        // Reload page to show image
+                        setTimeout(() => location.reload(), 500);
+                    });
+                }
             });
         }
         
@@ -417,27 +436,6 @@
                 const url = new URL(window.location.href);
                 url.searchParams.set('occasion', this.value);
                 window.location.href = url;
-            });
-        }
-        
-        // Image Upload logic
-        if(uploadImageBtn) {
-            uploadImageBtn.addEventListener('click', function() {
-                uploadFormOverlay.style.display = 'flex';
-            });
-        }
-        
-        if(closeUploadForm) {
-            closeUploadForm.addEventListener('click', function() {
-                uploadFormOverlay.style.display = 'none';
-            });
-        }
-        
-        if(uploadFormOverlay) {
-            uploadFormOverlay.addEventListener('click', function(e) {
-                if (e.target === uploadFormOverlay) {
-                    uploadFormOverlay.style.display = 'none';
-                }
             });
         }
     });
