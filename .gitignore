@@ -11,3 +11,4 @@ staticfiles/
 core/__pycache__/
 wishapp/__pycache__/
 *.sqlite3
+media/

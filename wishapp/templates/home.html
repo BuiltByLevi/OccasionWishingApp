@@ -84,6 +84,22 @@
             background: {{ theme_color|default:'#ff4d6d' }};
         }
         
+        .upload-btn {
+            position: fixed;
+            top: 80px;
+            left: 20px;
+            z-index: 30;
+            padding: 10px 20px;
+            border-radius: 50px;
+            color: white;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            font-family: 'Poppins', sans-serif;
+            background: #4CAF50;
+        }
+        
         /* Custom Form Styles */
         .custom-form-overlay {
             position: fixed;
@@ -109,7 +125,8 @@
         }
         
         .custom-form-container input, 
-        .custom-form-container textarea {
+        .custom-form-container textarea,
+        .custom-form-container select {
             width: 100%;
             padding: 10px;
             margin-bottom: 15px;
@@ -162,6 +179,15 @@
         .message-text {
             white-space: pre-line;
         }
+        
+        .custom-image {
+            max-width: 250px;
+            max-height: 200px;
+            margin: 0 auto;
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            object-fit: cover;
+        }
     </style>
 </head>
 <body>
@@ -169,6 +195,11 @@
 <!-- Customize Button -->
 <button class="customize-btn" id="customizeBtn">
     ✏️ Customize Message
+</button>
+
+<!-- Upload Image Button -->
+<button class="upload-btn" id="uploadImageBtn">
+    📸 Upload Image
 </button>
 
 <!-- Occasion Selector -->
@@ -182,12 +213,24 @@
 <div id="main-card">
     <div class="glass-card">
         <div class="floating-emoji text-center">{{ emojis }}</div>
+        
+        <!-- Title -->
         <h1 class="text-5xl md:text-6xl font-bold text-center mt-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
             {{ title }} <span style="color: {{ theme_color|default:'#ff4d6d' }};">{{ name }}</span>!
         </h1>
+        
+        <!-- Display Uploaded Image -->
+        {% if custom_image %}
+        <div class="text-center my-6">
+            <img src="{{ custom_image }}" alt="Custom Image" class="custom-image">
+        </div>
+        {% endif %}
+        
+        <!-- Message -->
         <p class="text-xl md:text-2xl text-center mt-6 message-text" style="color: rgba(255,255,255,0.95);">
             {{ message }}
         </p>
+        
         <div class="text-center mt-8 text-3xl">
             ✨ 🎀 🎁 🎊 ✨
         </div>
@@ -216,6 +259,28 @@
         
         <button class="apply-btn" id="applyCustom">🎉 Apply & Share Link</button>
         <button class="close-form-btn" id="closeFormBtn">Close</button>
+    </div>
+</div>
+
+<!-- Image Upload Form -->
+<div id="uploadFormOverlay" class="custom-form-overlay">
+    <div class="custom-form-container">
+        <h3>📸 Upload Custom Image</h3>
+        <form method="POST" action="/upload-image/" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label>Select Occasion:</label>
+            <select name="occasion" required>
+                <option value="birthday">🎂 Birthday</option>
+                <option value="anniversary">💕 Anniversary</option>
+                <option value="valentine">🌹 Valentine</option>
+            </select>
+            
+            <label>Choose Image:</label>
+            <input type="file" name="custom_image" accept="image/*" required>
+            
+            <button type="submit" class="apply-btn">📤 Upload</button>
+            <button type="button" class="close-form-btn" id="closeUploadForm">Cancel</button>
+        </form>
     </div>
 </div>
 
@@ -299,7 +364,13 @@
         const closeFormBtn = document.getElementById('closeFormBtn');
         const applyCustom = document.getElementById('applyCustom');
         const occasionSelect = document.getElementById('occasionSelect');
+        
+        // Image Upload Elements
+        const uploadImageBtn = document.getElementById('uploadImageBtn');
+        const uploadFormOverlay = document.getElementById('uploadFormOverlay');
+        const closeUploadForm = document.getElementById('closeUploadForm');
 
+        // Customize button logic
         if(customizeBtn) {
             customizeBtn.addEventListener('click', function() {
                 customFormOverlay.style.display = 'flex';
@@ -340,11 +411,33 @@
             });
         }
 
+        // Occasion selector logic
         if(occasionSelect) {
             occasionSelect.addEventListener('change', function() {
                 const url = new URL(window.location.href);
                 url.searchParams.set('occasion', this.value);
                 window.location.href = url;
+            });
+        }
+        
+        // Image Upload logic
+        if(uploadImageBtn) {
+            uploadImageBtn.addEventListener('click', function() {
+                uploadFormOverlay.style.display = 'flex';
+            });
+        }
+        
+        if(closeUploadForm) {
+            closeUploadForm.addEventListener('click', function() {
+                uploadFormOverlay.style.display = 'none';
+            });
+        }
+        
+        if(uploadFormOverlay) {
+            uploadFormOverlay.addEventListener('click', function(e) {
+                if (e.target === uploadFormOverlay) {
+                    uploadFormOverlay.style.display = 'none';
+                }
             });
         }
     });

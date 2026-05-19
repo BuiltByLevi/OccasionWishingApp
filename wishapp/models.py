@@ -6,6 +6,7 @@ class OccasionMessage(models.Model):
     message = models.TextField()
     theme_color = models.CharField(max_length=7, default="#ff69b4")
     emojis = models.CharField(max_length=100, default="🎂🎈🎉")
+    custom_image = models.ImageField(upload_to='occasion_images/', blank=True, null=True)
 
     def __str__(self):
         return self.occasion
